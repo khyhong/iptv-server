@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TV Station Manager 📺</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <span class="logo-icon">📺</span>
+        <h1>TV Manager</h1>
+      </div>
+      <nav class="nav">
+        <a href="#dashboard" class="nav-link active" data-tab="dashboard">
+          <span class="icon">🏠</span> Dashboard
+        </a>
+        <a href="#stations" class="nav-link" data-tab="stations">
+          <span class="icon">📡</span> ប៉ុស្តិ៏ទូរទស្សន៍
+        </a>
+        <a href="#groups" class="nav-link" data-tab="groups">
+          <span class="icon">📁</span> ក្រុម Channel
+        </a>
+        <a href="#playlist" class="nav-link" data-tab="playlist">
+          <span class="icon">📋</span> បង្កើត Playlist
+        </a>
+        <a href="#import" class="nav-link" data-tab="import">
+          <span class="icon">📥</span> បញ្ចូលទិន្នន័យ
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <p>💡 បញ្ចូល M3U8 URL របស់ប៉ុស្តិ៏</p>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      <!-- Header -->
+      <header class="header">
+        <h2 id="page-title">Dashboard</h2>
+        <div class="header-actions" id="header-actions">
+          <button class="btn btn-primary" onclick="openAddModal()">
+            <span>➕</span> បន្ថែមប៉ុស្តិ៏
+          </button>
+        </div>
+      </header>
+
+      <!-- Dashboard Tab -->
+      <div id="tab-dashboard" class="tab-content active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon total">📡</div>
+            <div class="stat-info">
+              <h3 id="stat-total">0</h3>
+              <p>ប៉ុស្តិ៏សរុប</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon active">✅</div>
+            <div class="stat-info">
+              <h3 id="stat-enabled">0</h3>
+              <p>កំពុងដំណើរការ</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon inactive">⏸️</div>
+            <div class="stat-info">
+              <h3 id="stat-disabled">0</h3>
+              <p>បានបិទ</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon playlist">📋</div>
+            <div class="stat-info">
+              <h3 id="stat-categories">0</h3>
+              <p>ប្រភេទ</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon groups">📁</div>
+            <div class="stat-info">
+              <h3 id="stat-groups">0</h3>
+              <p>ក្រុម</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+          <h3>⚡ សកម្មភាពលឿន</h3>
+          <div class="actions-grid">
+            <button class="action-card" onclick="generateSampleData()">
+              <span class="action-icon">🎲</span>
+              <span>បង្កើតទិន្នន័យសាកល្បង (100)</span>
+            </button>
+            <button class="action-card" onclick="showTab('stations')">
+              <span class="action-icon">📡</span>
+              <span>មើលប៉ុស្តិ៏ទាំងអស់</span>
+            </button>
+            <button class="action-card" onclick="showTab('groups')">
+              <span class="action-icon">📁</span>
+              <span>គ្រប់គ្រងក្រុម</span>
+            </button>
+            <button class="action-card" onclick="showTab('playlist')">
+              <span class="action-icon">📋</span>
+              <span>យក Playlist Link</span>
+            </button>
+            <button class="action-card" onclick="exportData()">
+              <span class="action-icon">💾</span>
+              <span>Backup ទិន្នន័យ</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <h3>🎯 របៀបប្រើលើ Android</h3>
+          <ol>
+            <li>ទាញយក App <strong>IPTV Player</strong> (ឧ. VLC, TiviMate, IPTV Smarters) ពី Play Store</li>
+            <li>ចូលទៅ <strong>Playlist</strong> → បញ្ចូល URL របស់អ្នក</li>
+            <li>ដាក់ URL: <code id="android-url">http://your-server-ip:3000/api/playlist.m3u8</code></li>
+            <li>ចុច <strong>Load</strong> — រីករាយមើលប៉ុស្តិ៏ទាំងអស់!</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- Stations Tab -->
+      <div id="tab-stations" class="tab-content">
+        <div class="filter-bar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="ស្វែងរកប៉ុស្តិ៏..." oninput="searchStations()">
+          </div>
+          <select id="filter-category" onchange="filterStations()">
+            <option value="">ទាំងអស់ — ប្រភេទ</option>
+          </select>
+          <select id="filter-group" onchange="filterStations()">
+            <option value="">ទាំងអស់ — ក្រុម</option>
+          </select>
+          <select id="filter-country" onchange="filterStations()">
+            <option value="">ទាំងអស់ — ប្រទេស</option>
+          </select>
+        </div>
+
+        <div class="table-toolbar">
+          <span id="station-count">0 ប៉ុស្តិ៏</span>
+          <div class="toolbar-actions">
+            <button class="btn btn-sm btn-danger" onclick="deleteSelected()">🗑️ លុបដែលជ្រើសរើស</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></th>
+                <th>Logo</th>
+                <th>ឈ្មោះ</th>
+                <th>Category</th>
+                <th>ក្រុម</th>
+                <th>ប្រទេស</th>
+                <th>ភាសា</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="stations-table"></tbody>
+          </table>
+        </div>
+
+        <div class="pagination" id="pagination"></div>
+      </div>
+
+      <!-- Groups Tab -->
+      <div id="tab-groups" class="tab-content">
+        <div class="filter-bar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="group-search-input" placeholder="ស្វែងរកក្រុម..." oninput="searchGroups()">
+          </div>
+        </div>
+
+        <div class="table-toolbar">
+          <span id="group-count">0 ក្រុម</span>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ឈ្មោះ</th>
+                <th>Description</th>
+                <th>Stations</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="groups-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Playlist Tab -->
+      <div id="tab-playlist" class="tab-content">
+        <div class="playlist-section">
+          <div class="card">
+            <h3>📋 លីងកូដ Playlist របស់អ្នក</h3>
+            <p class="desc">យក Link ទាំងនេះទៅបញ្ចូលក្នុង Android TV Box ឬ App IPTV Player</p>
+            
+            <div class="url-box">
+              <label>M3U Playlist (ទាំងអស់)</label>
+              <div class="url-row">
+                <input type="text" id="playlist-url" readonly>
+                <button class="btn btn-copy" onclick="copyUrl('playlist-url')">📋 Copy</button>
+                <a class="btn btn-download" id="playlist-download" href="#" target="_blank">⬇️ ទាញយក</a>
+              </div>
+            </div>
+
+            <div class="url-box">
+              <label>M3U8 Playlist (ទាំងអស់)</label>
+              <div class="url-row">
+                <input type="text" id="playlist8-url" readonly>
+                <button class="btn btn-copy" onclick="copyUrl('playlist8-url')">📋 Copy</button>
+                <a class="btn btn-download" id="playlist8-download" href="#" target="_blank">⬇️ ទាញយក</a>
+              </div>
+            </div>
+
+            <div class="url-box">
+              <label>Filter by Category</label>
+              <select id="playlist-category" onchange="updatePlaylistUrl()">
+                <option value="">ទាំងអស់</option>
+              </select>
+              <div class="url-row" style="margin-top:10px">
+                <input type="text" id="playlist-filtered-url" readonly>
+                <button class="btn btn-copy" onclick="copyUrl('playlist-filtered-url')">📋 Copy</button>
+                <a class="btn btn-download" id="playlist-filtered-download" href="#" target="_blank">⬇️ ទាញយក</a>
+              </div>
+            </div>
+
+            <div class="url-box">
+              <label>Filter by Group</label>
+              <select id="playlist-group" onchange="updatePlaylistUrl()">
+                <option value="">ទាំងអស់</option>
+              </select>
+              <div class="url-row" style="margin-top:10px">
+                <input type="text" id="playlist-group-url" readonly>
+                <button class="btn btn-copy" onclick="copyUrl('playlist-group-url')">📋 Copy</button>
+                <a class="btn btn-download" id="playlist-group-download" href="#" target="_blank">⬇️ ទាញយក</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>📱 App ណាដែលគាំទ្រ?</h3>
+            <div class="app-list">
+              <div class="app-item">
+                <span class="app-icon">🎬</span>
+                <div>
+                  <strong>VLC for Android</strong>
+                  <p>ឥតគិតថ្លៃ, លេងបានគ្រប់ប្រភេទ</p>
+                </div>
+              </div>
+              <div class="app-item">
+                <span class="app-icon">📺</span>
+                <div>
+                  <strong>IPTV Smarters Pro</strong>
+                  <p>ល្អបំផុតសម្រាប់ TV Box</p>
+                </div>
+              </div>
+              <div class="app-item">
+                <span class="app-icon">📡</span>
+                <div>
+                  <strong>TiviMate</strong>
+                  <p>លើ Android TV / Firestick</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Import Tab -->
+      <div id="tab-import" class="tab-content">
+        <div class="card">
+          <h3>📥 បញ្ចូល Stations ច្រើនរហូតដល់ 10,000</h3>
+          <p class="desc">បិទភ្ជាប់ JSON array នៃ stations ខាងក្រោម។ Format៖</p>
+          <pre class="code-block">[
+  {
+    "name": "TV Station Name",
+    "url": "https://stream-url.com/playlist.m3u8",
+    "logo": "https://logo-url.png",
+    "category": "News",
+    "group": "My Group",
+    "country": "Cambodia",
+    "language": "Khmer"
+  }
+]</pre>
+          <textarea id="import-data" placeholder="បិទភ្ជាប់ JSON របស់អ្នកទីនេះ..."></textarea>
+          <button class="btn btn-primary" onclick="importData()">📥 បញ្ចូលទិន្នន័យ</button>
+          <div id="import-result" class="result-box"></div>
+        </div>
+
+        <div class="card">
+          <h3>📝 M3U Import</h3>
+          <p class="desc">បញ្ចូល M3U/M3U8 file content ដើម្បី parse stations</p>
+          <textarea id="import-m3u" placeholder="#EXTM3U
+#EXTINF:-1 tvg-name=\"Channel 1\" group-title=\"My Group\",Channel 1
+https://stream-url.com/playlist.m3u8
+..."></textarea>
+          <button class="btn btn-primary" onclick="importM3U()">📥 Parse M3U</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Station Modal -->
+  <div class="modal" id="station-modal">
+    <div class="modal-overlay" onclick="closeModal()"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title">➕ បន្ថែមប៉ុស្តិ៏ថ្មី</h3>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-id">
+        <div class="form-group">
+          <label>ឈ្មោះប៉ុស្តិ៏ *</label>
+          <input type="text" id="input-name" placeholder="ឧ. Cambodia TV">
+        </div>
+        <div class="form-group">
+          <label>URL Stream (M3U8) *</label>
+          <input type="text" id="input-url" placeholder="https://.../playlist.m3u8">
+        </div>
+        <div class="form-group">
+          <label>Logo URL</label>
+          <input type="text" id="input-logo" placeholder="https://.../logo.png">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Category</label>
+            <select id="input-category">
+              <option value="General">General</option>
+              <option value="News">News</option>
+              <option value="Sports">Sports</option>
+              <option value="Movies">Movies</option>
+              <option value="Music">Music</option>
+              <option value="Kids">Kids</option>
+              <option value="Documentary">Documentary</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>ក្រុម</label>
+            <select id="input-group">
+              <option value="">គ្មាន</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>ប្រទេស</label>
+            <input type="text" id="input-country" placeholder="Cambodia">
+          </div>
+          <div class="form-group">
+            <label>ភាសា</label>
+            <input type="text" id="input-language" placeholder="Khmer">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal()">បោះបង់</button>
+        <button class="btn btn-primary" onclick="saveStation()">💾 រក្សាទុក</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Group Modal -->
+  <div class="modal" id="group-modal">
+    <div class="modal-overlay" onclick="closeGroupModal()"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="group-modal-title">➕ បន្ថែមក្រុមថ្មី</h3>
+        <button class="modal-close" onclick="closeGroupModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-group-id">
+        <div class="form-group">
+          <label>ឈ្មោះក្រុម *</label>
+          <input type="text" id="input-group-name" placeholder="ឧ. Premium Channels">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" id="input-group-desc" placeholder="ឧ. All premium channels for VIP">
+        </div>
+        <div class="form-group" id="group-stations-section">
+          <label>ជ្រើសរើស Stations</label>
+          <div class="group-stations-list" id="group-stations-list"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeGroupModal()">បោះបង់</button>
+        <button class="btn btn-primary" onclick="saveGroup()">💾 រក្សាទុក</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
